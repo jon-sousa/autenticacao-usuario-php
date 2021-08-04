@@ -2,35 +2,30 @@
 
 use model\Usuario;
 use infra\UsuarioRepository;
+use controller\{
+    IncluirUsuarioFormularioController, 
+    IncluirUsuarioController, 
+    LoginFormularioController,
+    LoginController
+};
 
 require_once 'autoload.php';
 
-$pdo = new \PDO(
-    'sqlite:' . __DIR__ . DIRECTORY_SEPARATOR . 'db.sqlite3', 
-    null, 
-    null, 
-    [
-        PDO::ATTR_PERSISTENT => true
-    ]
-);
-$usuarioRepository = new UsuarioRepository($pdo);
+session_start();
 
-$jon = new Usuario('JonThunder', 'jon@thunder.com');
-$jon->setNomeCompleto('Jon');
-$jon->cadastrarSenha('12345678');
+$router = require __DIR__ . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'router' . DIRECTORY_SEPARATOR . 'router.php';
+$uri = $_SERVER['REQUEST_URI'];
 
-$greg = new Usuario('GregSnake', 'greg@snake.com');
-$greg->setNomeCompleto('Greg');
-$greg->cadastrarSenha('gregsnake');
+if(!array_key_exists($uri, $router)){
+    echo "Página não Encontrada!";
+    return;
+}
 
-$tom = new Usuario('TomStrike', 'tom@strike.com');
-$tom->setNomeCompleto('Tom');
-$tom->cadastrarSenha('tom123,');
+if(!isset($_SESSION['logado']) && ($uri != '/login' && $uri != '/autentica-usuario')){
+    header('Location: /login');
+    return;
+}
 
-
-$usuarioRepository->inserir($jon);
-$usuarioRepository->inserir($greg);
-$usuarioRepository->inserir($tom);
-
-$todos = $usuarioRepository->encontrarTodos();
-var_dump($todos);
+$controllerName = $router[$uri];
+$controller = new $controllerName();
+$controller->handle();

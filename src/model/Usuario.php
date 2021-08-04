@@ -11,6 +11,7 @@ class Usuario
     private string $senha;
 
     public function __construct(string $nomeUsuario, string $email){
+        var_dump($nomeUsuario);
         $this->nomeUsuario = $nomeUsuario;
         $this->email = $email;
     }
@@ -22,6 +23,11 @@ class Usuario
     public function cadastrarSenha(string $senha){
         $senhaHash = password_hash($senha, PASSWORD_ARGON2I);
         $this->senha = $senhaHash;
+    }
+
+    public function setSenha(string $senha){
+        $this->senha = $senha;
+        return $this;
     }
 
     public function getNomeCompleto()

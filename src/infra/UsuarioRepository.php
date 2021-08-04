@@ -6,8 +6,16 @@ class UsuarioRepository
 {
     private \PDO $pdo;
 
-    public function __construct(\PDO $pdo){
-        $this->pdo = $pdo;
+    public function __construct(){
+        $this->pdo = new \PDO(
+            'sqlite:' . __DIR__ . DIRECTORY_SEPARATOR . '..'. DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'db.sqlite3', 
+            null, 
+            null, 
+            [
+                \PDO::ATTR_PERSISTENT => true
+            ]
+        );
+
         $this->iniciar();
     }
 
@@ -26,11 +34,17 @@ class UsuarioRepository
     }
 
     public function encontrarUm(string $email){
-        $ps = $this->pdo->prepare('select * from usuarios where email = :email', PDO::FETCH_ASSOC);
+        $ps = $this->pdo->prepare('select * from usuarios where email = :email');
         $ps->execute([
             ':email' => $email
         ]);
-        return $ps->fetch(PDO::FETCH_ASSOC);
+        $usuarioArray = $ps->fetch(\PDO::FETCH_ASSOC);
+
+        $usuario = new Usuario($usuarioArray['nome_usuario'], $usuarioArray['email']);
+        $usuario->setNomeCompleto($usuarioArray['nome_completo']);
+        $usuario->setSenha($usuarioArray['senha']);
+
+        return $usuario;
     }
 
     public function encontrarTodos() : array{
